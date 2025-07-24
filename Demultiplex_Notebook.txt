@@ -1,3 +1,13 @@
 ###################
 ### DEMULTIPLEX ###
 ###################
+
+### Prelim Data Exploration ###
+File Formats/ Data Locations:
+R1 -> Bio Read 1 
+R2 -> Index Read 1
+R3 -> Index Read 2
+R4 -> Bio Read 2
+
+
+
