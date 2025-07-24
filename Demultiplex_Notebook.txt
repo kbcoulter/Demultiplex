@@ -2,12 +2,144 @@
 ### DEMULTIPLEX ###
 ###################
 
-### Prelim Data Exploration ###
-File Formats/ Data Locations:
-R1 -> Bio Read 1 
-R2 -> Index Read 1
-R3 -> Index Read 2
-R4 -> Bio Read 2
+###################################
+### 1.1.1 Prelim Data Exploration ###
+###################################
+
+~ Got away from the evil login node:
+    $ srun --account=bgmp --partition=bgmp --time=1:00:00 --pty bash
+
+~ Naviagted:
+    $ cd /projects/bgmp/shared/2017_sequencing
+
+1. Which files contain the indexes, and which contain the paired end reads containing the biological data of interest. 
+    R1 -> Bio Read 1 
+    R2 -> Index Read 1
+    R3 -> Index Read 2
+    R4 -> Bio Read 2
+
+2. Determine the length of the reads in each file.
+    R1 -> 101: $ zcat 1294_S1_L008_R1_001.fastq.gz | head -2 | tail -1 | wc -c
+    R2 -> 8: $ zcat 1294_S1_L008_R2_001.fastq.gz | head -2 | tail -1 | wc -c
+    R3 -> 8: $ zcat 1294_S1_L008_R2_001.fastq.gz | head -2 | tail -1 | wc -c
+    R4 -> $ zcat 1294_S1_L008_R4_001.fastq.gz | head -2 | tail -1 | wc -c
+    Note: Subtract 1 from all results to account for the newline character.
+
+3. Determine the phred encoding for these data.
+    Quality score contains < chatracters, which only exist in Phred33, therefore we have phred33: $ zcat 1294_S1_L008_R1_001.fastq.gz | head -100 | grep -c "<" -
+    Quality score contains < chatracters, which only exist in Phred33, therefore we have phred33: $ zcat 1294_S1_L008_R2_001.fastq.gz | head -100 | grep -c "<" 
+    Quality score contains < chatracters, which only exist in Phred33, therefore we have phred33: $ zcat 1294_S1_L008_R3_001.fastq.gz | head -100 | grep -c "<" 
+    Quality score contains < chatracters, which only exist in Phred33, therefore we have phred33: $ zcat 1294_S1_L008_R4_001.fastq.gz | head -100 | grep -c "<" 
+
+#############################
+### 1.2 Algorithm Outline ###
+#############################
+
+~ Whats the problem:
+
+    We have lane sequencing data from an illumina sequencer and need to demultiplex the data, meaning that we need to separate the data into separate files
+    for our difference bio reads. Currently, we have 4 files, Bioread1, Bioread2, Index1, and Index2. Upon matching the indexes with thier respective reads, 
+    you would have 2 records of the same read, one being the reverse compliment, with both reads in the 5' to 3' direction. So, we should have a matching record between read1
+    and read2. We need to match the indexes of our reads, as we have indexes at the beginning and the end of the data, between our reads to ensure no index-hopping occured
+    and split these enormous files into smaller fastq files for each respective read. That is, barcode A matches would have 2 files, B matches would have 2 files, etc...
+
+~ What would be the output:
+    To separate these reads, we need to match the R1 and R2 indexes and thier asspsciated reads. 
+        If these index reads match, we create one Read1 FASTQ file and one Read2 FASTQ file per matching index-pair X.
+        If these index reads do not match, meaning index-hopping occured, we create two more FASTQ files, one for non-matching index-pairs (index-hopping) for index X
+        Finally, we need two additional FASTQ files for when one or both index reads are unknown or low quality (meaning they do not match with our 24 known indexes (Containg N's) or fail quality score cutoff).
+
+    Also, We must output:
+        the number of read-pairs with properly matched indexes (per index-pair),
+        the number of read pairs with index-hopping observed, and
+        the number of read-pairs with unknown index(es).
+
+~ Outline:
+
+    ##### FUNCTIONS #####
+
+    def reverse_comp(sequence: str) -> str:
+        '''Takes a sequence (string) with or without newline characters and returns the reverse compliment of the string without newline characters'''
+        return rev_cop
+    Input: CATG
+    Expected Output: GTAC
+
+    def convert_phred(letter: str) -> int:
+        '''Takes a single ASCII character (string) encoded in Phred+33 and returns the quality score value as an integer.'''
+        return qscore  
+    Input: I
+    Expected output: 40
+
+    def mean_qual_score(sequence: str) -> float:
+        '''Takes a quality score sequence (string), uses convert_phred function to convert each phred+33 encoding into a integer quality score, then averages the quality score and returns the mean values. '''
+        return mean_score
+    Input: IIIIIIIIII
+    Expected output: 40
+
+    ##### SCRIPT #####
+
+    Create a quality_score_cutoff integer where every index/barcode read with quality score below goes into unknown. 
+    Create a barcode_bank with barcode records (known indices) into a dictionary for faster lookup, with key sequence (GTAGCGTA) and value code (B1). 
+    Create a match_dict dictionary with the barcode or indices as keys, and match numbers initilizaed to 0.
+    Create a hopping_counter initialized to 0.
+    Create a hopping_dict dicitonary with nothing in it. The keys will be our Header_additions and the values will be counters initilaized to 1 upon their addition to the list. 
+    Create a unkown_counter initialized to 0. 
+
+    ##### PARSE FILES #####
+
+    Open all 4 files, R1, R2, R3, R4 at the same time. We will iteratively take 1 record (4 lines) from R1 and R4, while collecting the respective indices ONLY from R2 and R3.
+
+        ### PER RECORD VALUES ###
+        Read1_Bio = R1 -> Bio Read 1
+        Read1_Barcode = R2 with stripped newline characters -> Index Read 1
+        Read2_Bio = R4 -> Bio Read 2
+        Read2_Barcode = reverse_comp R3 with stripped newline characters -> Index Read 2 (we must reverse compliment the R3 barcode... as this read pairs with the reverse compliment).
+        Header_Addition = "<Read1_Barcode>-<Read2_Barcode>"
+        quality_score = min(mean_quality_score(Read1_Barcode), mean_quality_score(Read2_Barcode))
+
+        Append Header_Addition to the 1st line of Read1_Bio and Read2_Bio. 
+
+            If 1 or both of the barcodes are not in barcode_bank or quality_score < quality_score_cutoff: something went wrong and the barcode/index is unknown, or quality score it too poor to be confident
+        
+                We will add one to the unknown_counter.
+
+                If unknown_R1_fastq.txt anf unknown_R2_fastq.txt exist:
+                    Write Read1_Bio record into the fastq file unknown_R1_fastq.txt
+                    Write Read2_Bio record into the fastq file unknown_R2_fastq.txt
+                else:
+                    Write our Read1_Bio record into a new fastq file titled unknown_R1_fastq.txt
+                    Write our Read2_Bio record into a new fastq file titled unknown_R2_fastq.txt
 
 
+            Else, If the R2 barcode matches the R3 barcodes: we know that the reads match valid barcodes:
+
+                For this barcode key, we will add one to the match_dict dictionary score. 
+
+                If <barcode>_R1_fastq.txt and <barcode>_R2_fastq.txt exist:
+                    Write Read1_Bio record into the fastq file <barcode>_R1_fastq.txt
+                    Write Read2_Bio record into the fastq file <barcode>_R2_fastq.txt
+                else:
+                    Write Read1_Bio record into a new fastq file titled <barcode>_R1_fastq.txt
+                    Write Read2_Bio record into a new fastq file titled <barcode>_R2_fastq.txt
+
+
+            Else: the R2 and R3 Barcodes must not match, both barcodes are in barcode_bank, and quality_score >= quality_score_cutoff, we know that index hopping occured:
+
+                We will add one to the hopping_counter.
+                For our Header_Addition, we will add one to the hopping_dict dictionary score or initialize it to 1 if it does not currently exist.
+
+                If hopping_R1_fastq.txt and hopping_R2_fastq.txt exist:
+                    Write Read1_Bio record into the fastq file hopping_R1_fastq.txt
+                    Write Read2_Bio record into the fastq file hopping_R2_fastq.txt
+                else:
+                    Write Read1_Bio record into a new fastq file titled hopping_R1_fastq.txt
+                    Write Read2_Bio record into a new fastq file titled hopping_R2_fastq.txt
+
+    return (match_dict_counter, unknown_counter, hopping_counter, hopping_dict)
+
+
+
+
+
+    
 
