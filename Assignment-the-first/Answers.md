@@ -40,10 +40,10 @@
 
 3. Upload your [4 input FASTQ files](../TEST-input_FASTQ) and your [>=6 expected output FASTQ files](../TEST-output_FASTQ).
 
-4. [Pseudocode](./Assignment-the-first/Pseudocode_Outline.txt)
+4. [Pseudocode](./Pseudocode_Outline.txt)
     ( Click the link ) 
     
-5. High level functions. (Also at top of [Pseudocode](Assignment-the-first/Pseudocode_Outline.txt)) For each function, be sure to include:
+5. High level functions. (Also at top of [Pseudocode](./Pseudocode_Outline.txt)) For each function, be sure to include:
     1. Description/doc string
     2. Function headers (name and parameters)
     3. Test examples for individual functions
