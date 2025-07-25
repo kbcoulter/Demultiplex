@@ -37,22 +37,35 @@
 
 ~ Whats the problem:
 
-    We have lane sequencing data from an illumina sequencer and need to demultiplex the data, meaning that we need to separate the data into separate files
-    for our difference bio reads. Currently, we have 4 files, Bioread1, Bioread2, Index1, and Index2. Upon matching the indexes with thier respective reads, 
-    you would have 2 records of the same read, one being the reverse compliment, with both reads in the 5' to 3' direction. So, we should have a matching record between read1
-    and read2. We need to match the indexes of our reads, as we have indexes at the beginning and the end of the data, between our reads to ensure no index-hopping occured
-    and split these enormous files into smaller fastq files for each respective read. That is, barcode A matches would have 2 files, B matches would have 2 files, etc...
+We have lane sequencing data from an Illumina sequencer and need to demultiplex the data , meaning we need to separate it into distinct files for our 
+different biological reads. Currently, we have four files: Bioread1, Bioread2, Index1, and Index2. When matching the indexes (or barcodes) to their 
+respective reads, you end up with two records of the same read, one being the reverse complement, with both reads oriented 5’ to 3’. So, we expect a
+corresponding record between Read1 and Read2. To ensure no index hopping has occurred, we need to match the indexes across these FASTQ files, and then 
+split these large files into smaller FASTQ files for each matched read. That is, barcode A matches would produce two FASTQ files (Read1 and Read2), 
+barcode B matches would produce another two files, etc. To properly separate these reads, we must match the Read1 and Read2 indexes (using the reverse 
+complement of the Read2 index) for each FASTQ record. If index hopping occured, the mean quality score is not sufficient, or if the barcode doesn't match 
+our key, we have additional output files for these records and counters to track the number of times this occurs. 
 
 ~ What would be the output:
-    To separate these reads, we need to match the R1 and R2 indexes and thier asspsciated reads. 
-        If these index reads match, we create one Read1 FASTQ file and one Read2 FASTQ file per matching index-pair X.
-        If these index reads do not match, meaning index-hopping occured, we create two more FASTQ files, one for non-matching index-pairs (index-hopping) for index X
-        Finally, we need two additional FASTQ files for when one or both index reads are unknown or low quality (meaning they do not match with our 24 known indexes (Containg N's) or fail quality score cutoff).
 
-    Also, We must output:
-        the number of read-pairs with properly matched indexes (per index-pair),
-        the number of read pairs with index-hopping observed, and
-        the number of read-pairs with unknown index(es).
+        For each matching index pair, there is one Read1 FASTQ file and one Read2 FASTQ file.
+        For index-hopping events (non-matching index pairs within our barcode set), there are two additional FASTQ files, one for Read1 (hopping_R1_fastq.txt) and one for Read2 (hopping_R2_fastq.txt).
+        Two more FASTQ files are generated when one or both index reads are unknown (contain Ns), fail the quality score threshold, or do not exist in our index set
+
+        This results in the following output:
+
+        <barcode>_R1_fastq.txt for each unique barcode/index
+        <barcode>_R2_fastq.txt for each unique barcode/index 
+        hopping_R1_fastq.txt
+        hopping_R2_fastq.txt
+        unknown_R1_fastq.txt
+        unknown_R2_fastq.txt
+        
+        Also, We must output:
+            The number of read-pairs with properly matched indexes (per index-pair),
+            the number of read pairs with index-hopping observed, 
+            the number of index-hopping occurances by index combination,
+            and the number of read-pairs with unknown index(es).
 
 ~ Outline:
 
@@ -95,7 +108,8 @@
         Read2_Bio = R4 -> Bio Read 2
         Read2_Barcode = reverse_comp R3 with stripped newline characters -> Index Read 2 (we must reverse compliment the R3 barcode... as this read pairs with the reverse compliment).
         Header_Addition = "<Read1_Barcode>-<Read2_Barcode>"
-        quality_score = min(mean_quality_score(Read1_Barcode), mean_quality_score(Read2_Barcode))
+        quality_score = minimum of (mean_quality_score(Read1_Barcode), mean_quality_score(Read2_Barcode))
+        barcode_key = = barcode_bank value at key Read1_Barcode
 
         Append Header_Addition to the 1st line of Read1_Bio and Read2_Bio. 
 
@@ -115,12 +129,12 @@
 
                 For this barcode key, we will add one to the match_dict dictionary score. 
 
-                If <barcode>_R1_fastq.txt and <barcode>_R2_fastq.txt exist:
-                    Write Read1_Bio record into the fastq file <barcode>_R1_fastq.txt
-                    Write Read2_Bio record into the fastq file <barcode>_R2_fastq.txt
+                If <barcode_key>_R1_fastq.txt and <barcode_key>_R2_fastq.txt exist:
+                    Write Read1_Bio record into the fastq file <barcode_key>_R1_fastq.txt
+                    Write Read2_Bio record into the fastq file <barcode_key>_R2_fastq.txt
                 else:
-                    Write Read1_Bio record into a new fastq file titled <barcode>_R1_fastq.txt
-                    Write Read2_Bio record into a new fastq file titled <barcode>_R2_fastq.txt
+                    Write Read1_Bio record into a new fastq file titled <barcode_key>_R1_fastq.txt
+                    Write Read2_Bio record into a new fastq file titled <barcode_key>_R2_fastq.txt
 
 
             Else: the R2 and R3 Barcodes must not match, both barcodes are in barcode_bank, and quality_score >= quality_score_cutoff, we know that index hopping occured:
@@ -137,6 +151,7 @@
 
     return (match_dict_counter, unknown_counter, hopping_counter, hopping_dict)
 
+# NEED TO DOUBLE CHECK R3 OUTPUT MAKES SENSE... -> LABEL R4 WITH R2 BARCODE
 
 
 
