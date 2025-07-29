@@ -46,7 +46,7 @@
 5. High level functions. (Also at top of [Pseudocode](./Pseudocode_Outline.txt)) For each function, be sure to include:
     1. Description/doc string
     2. Function headers (name and parameters)
-    3. Test examples for individual functions
+    3. Test examples for individual functionsxit
     4. Return statement
 
     ```
