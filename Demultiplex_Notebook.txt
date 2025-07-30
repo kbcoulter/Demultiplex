@@ -2,11 +2,11 @@
 ### DEMULTIPLEX ###
 ###################
 
-###################################
+#####################################
 ### 1.1.1 Prelim Data Exploration ###
-###################################
+#####################################
 
-~ Got away from the evil login node:
+~ Escaped the evil login node:
     $ srun --account=bgmp --partition=bgmp --time=1:00:00 --pty bash
 
 ~ Naviagted:
@@ -30,6 +30,96 @@
     Quality score contains < chatracters, which only exist in Phred33, therefore we have phred33: $ zcat 1294_S1_L008_R2_001.fastq.gz | head -100 | grep -c "<" 
     Quality score contains < chatracters, which only exist in Phred33, therefore we have phred33: $ zcat 1294_S1_L008_R3_001.fastq.gz | head -100 | grep -c "<" 
     Quality score contains < chatracters, which only exist in Phred33, therefore we have phred33: $ zcat 1294_S1_L008_R4_001.fastq.gz | head -100 | grep -c "<" 
+
+###############################
+### 1.1.2 His plot Creation ###
+###############################
+
+~ $ mamba create -n demulti_env
+  $ mamba install python # Python version 3.13.5 
+  $ mamba install numpy # Sidenote -> Why does VSCode never like my numpy imports?
+  $ mamba install matplotlib
+
+~ Created a Python Script to generate the histograms... need to run on test files first...
+    UPDATE:
+        Test files look good. Updated the readfile to read non-gzipped files -> Changing back for slurm. 
+        $ python qual_by_nuc.py -f ../TEST-input_FASTQ/S1_TEST_R1_001.fastq -k 12 -o TESTINGR1
+        
+~ Created a slurm script to generate the histogram for all 4 of our files... 
+    With this script, we still need to run 4 times, just commenting out the files we dont want before submitting each job. 
+
+~ Copied Bioinfo.py V0.4 into this repo:
+  $ scp ./bioinfo.py hpc:/projects/bgmp/kcoulter/bioinfo/Bi622/Demultiplex
+
+~ JOB IDS FOR REAL DATA JOBS (SBATCH):
+    sbatch qual_by_nuc_slurm.sh R1: Submitted batch job 36694919
+    sbatch qual_by_nuc_slurm.sh R2: Submitted batch job 36694920
+    sbatch qual_by_nuc_slurm.sh R3: Submitted batch job 36694922
+    sbatch qual_by_nuc_slurm.sh R4: Submitted batch job 36694923
+
+    JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
+    36694923      bgmp qual_by_ kcoulter  R       1:24      1 n0349
+    36694919      bgmp qual_by_ kcoulter  R       4:16      1 n0349
+
+    SOMETHING IS WRONG/UNEXPECTED W/ FILES... OH NONE OF THEM ARE GZIPPED... Changed to regular file opening and the script ran as expected. 
+
+    `Traceback (most recent call last):
+    File "/gpfs/projects/bgmp/kcoulter/bioinfo/Bi622/Demultiplex/Assignment-the-first/./qual_by_nuc.py", line 26, in <module>
+        for index_line, line_data in enumerate(fastq):
+                                    ~~~~~~~~~^^^^^^^
+    File "/gpfs/home/kcoulter/miniforge3/envs/demulti_env/lib/python3.13/gzip.py", line 353, in read1
+        return self._buffer.read1(size)
+            ~~~~~~~~~~~~~~~~~~^^^^^^
+    File "/gpfs/home/kcoulter/miniforge3/envs/demulti_env/lib/python3.13/_compression.py", line 68, in readinto
+        data = self.read(len(byte_view))
+    File "/gpfs/home/kcoulter/miniforge3/envs/demulti_env/lib/python3.13/gzip.py", line 546, in read
+        if not self._read_gzip_header():
+            ~~~~~~~~~~~~~~~~~~~~~~^^
+    File "/gpfs/home/kcoulter/miniforge3/envs/demulti_env/lib/python3.13/gzip.py", line 515, in _read_gzip_header
+        last_mtime = _read_gzip_header(self._fp)
+    File "/gpfs/home/kcoulter/miniforge3/envs/demulti_env/lib/python3.13/gzip.py", line 475, in _read_gzip_header
+        raise BadGzipFile('Not a gzipped file (%r)' % magic)
+    gzip.BadGzipFile: Not a gzipped file (b'@K')
+    Command exited with non-zero status 1
+        Command being timed: "./qual_by_nuc.py -f R3FQ -k 8 -o R3_FASTQ"
+        User time (seconds): 1.00
+        System time (seconds): 0.06
+        Percent of CPU this job got: 282%
+        Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.37
+        Average shared text size (kbytes): 0
+        Average unshared data size (kbytes): 0
+        Average stack size (kbytes): 0
+        Average total size (kbytes): 0
+        Maximum resident set size (kbytes): 59344
+        Average resident set size (kbytes): 0
+        Major (requiring I/O) page faults: 0
+        Minor (reclaiming a frame) page faults: 13786
+        Voluntary context switches: 96
+        Involuntary context switches: 6
+        Swaps: 0
+        File system inputs: 0
+        File system outputs: 0
+        Socket messages sent: 0
+        Socket messages received: 0
+        Signals delivered: 0
+        Page size (bytes): 4096
+        Exit status: 1
+`
+REAL JOB IDS: 2 and 3 FIRST TO CATCH ERROR:
+R1: Submitted batch job 36694954
+R2: Submitted batch job 36694952
+R3: Submitted batch job 36694953
+R4: Submitted batch job 36694955
+
+          JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
+          36694955      bgmp qual_by_ kcoulter  R       0:27      1 n0349
+          36694954      bgmp qual_by_ kcoulter  R       1:05      1 n0349
+          36694953      bgmp qual_by_ kcoulter  R       3:45      1 n0349
+          36694952      bgmp qual_by_ kcoulter  R       4:27      1 n0349
+
+          Things look good right now...
+
+
 
 #############################
 ### 1.2 Algorithm Outline ###
