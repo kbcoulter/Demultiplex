@@ -21,7 +21,7 @@ args = get_args()
 qscores = np.zeros(args.readsize, dtype = float) # Will hold summed qscores then the mean after div.
 num_records = 0
 
-with open(args.filename, "rt") as fastq: # FOR TESTING FILES
+with open(args.filename, "rt") as fastq: # FOR ALL FILES, AS WE HAVE ZCATTED THE FILE IN USING OUR SLURM SCRIPT...
 #with gzip.open(args.filename, "rt") as fastq: # FOR REAL FILES
      for index_line, line_data in enumerate(fastq):
             if index_line % 4 == 3:
@@ -32,11 +32,12 @@ with open(args.filename, "rt") as fastq: # FOR TESTING FILES
 qscores = (qscores / num_records) # Div sum by num records and update the qscores arr
 
 ##### PLOTS #####
-plt.bar(range(args.readsize), qscores, color = "green", edgecolor = "green")
+plt.bar(range(args.readsize), qscores, color = "green", edgecolor = "black", width = 0.84)
 plt.xlim(-1,args.readsize)
 #plt.ylim(0, np.max(qscores))
 plt.xlabel("Base Position in Read (0 Ind.)", fontsize = 14)
 plt.ylabel("Average Quality Score", fontsize = 14)
 plt.title(f"Mean Quality Score by {args.filename} Base Position", fontsize = 16, fontweight = "bold")
 plt.grid(axis='y', linestyle='--', color = "grey", alpha=0.5)
+plt.tight_layout()
 plt.savefig(f"{args.outname}.png")

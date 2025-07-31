@@ -62,6 +62,7 @@
     36694919      bgmp qual_by_ kcoulter  R       4:16      1 n0349
 
     SOMETHING IS WRONG/UNEXPECTED W/ FILES... OH NONE OF THEM ARE GZIPPED... Changed to regular file opening and the script ran as expected. 
+    Nevermind, everything is okay. I was zcatting 2x. Now I zcat in slurm and not in py. Problem solved. 
 
     `Traceback (most recent call last):
     File "/gpfs/projects/bgmp/kcoulter/bioinfo/Bi622/Demultiplex/Assignment-the-first/./qual_by_nuc.py", line 26, in <module>
@@ -119,6 +120,11 @@ R4: Submitted batch job 36694955
 
           Things look good right now...
 
+REAL JOB IDS: 
+R1: Submitted batch job 36716246
+R2: Submitted batch job 36716245
+R3: Submitted batch job 36716244
+R4: Submitted batch job 36716243
 
 
 #############################
