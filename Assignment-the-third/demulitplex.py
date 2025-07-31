@@ -6,7 +6,7 @@ import argparse
 
 def reverse_comp(sequence: str) -> str:
     '''Takes a sequence (string) with or without newline characters and returns the reverse compliment of the string without newline characters in uppercase'''
-    sequence = sequence.,upper().strip()
+    sequence = sequence.upper().strip()
     map = {'A': 'T', 'T': 'A', 'C': 'G', 'G': 'C',}
     rev_comp = ("".join([map.get(entry, entry)for entry in sequence]))[::-1] # BRACKET REVERSES, OTHER COMPS
     return rev_comp
@@ -28,10 +28,20 @@ def mean_qual_score(sequence: str) -> float:
         holder.append(convert_phred(char))
     return (np.mean(holder))
 
+def collect_record(file):
+    record = []
+    for line_counter in range(4):
+        line = file.readline()
+        if line:
+            record.append(line.strip())
+
+    return record
+
+
 #Input: IIIIIIIIII
 #Expected output: 40
 
-# ADD ARGPARSE AFTER TESTING
+# !!! ADD ARGPARSE AFTER TESTING !!!
 """
 def get_args():
      parser = argparse.ArgumentParser(description="A script to average the quality scores at each position for all reads and generate a per nucleotide mean distribution of quality scores for read1, read2, index1, and index2.")
@@ -43,48 +53,93 @@ def get_args():
 args = get_args()
 """
 
-
 ##### PSEUDOCODE OUTLINE FOR THE SCRIPT #####
 
 # TO BE SET BY ARGPARSE LATER:
 quality_score_cutoff = 5 #Create a quality_score_cutoff integer where every index/barcode read with quality score below goes into unknown. 
-barcode_bank = "barcode bank file" #Create a barcode_bank with barcode records (known indices) into a dictionary for faster lookup, with key sequence (GTAGCGTA) and value code (B1). 
-r1 = 
-r2 = 
-r3 = 
-r4 = 
+index_file = "/projects/bgmp/shared/2017_sequencing/indexes.txt"
+
+### REAL DATA ###
+#r1 = "/projects/bgmp/shared/2017_sequencing/1294_S1_L008_R1_001.fastq.gz"
+#r2 = "/projects/bgmp/shared/2017_sequencing/1294_S1_L008_R2_001.fastq.gz"
+#r3 = "/projects/bgmp/shared/2017_sequencing/1294_S1_L008_R3_001.fastq.gz"
+#r4 = "/projects/bgmp/shared/2017_sequencing/1294_S1_L008_R4_001.fastq.gz"
+
+### TESTING DATA ### 
+r1 = "/TEST-input_FASTQ/..."
+
+
 
 ##### SET GLOBAL VARS #####
 match_dict = {} #Create a match_dict dictionary with the barcode or indices as keys, and match numbers initilizaed to 1 upon thier addition.
 hopping_counter = 0 #Create a hopping_counter initialized to 0.
 hopping_dict = {} #Create a hopping_dict dicitonary with nothing in it. The keys will be our Header_additions and the values will be counters initilaized to 1 upon their addition to the list. 
-unkown_counter = 0 #Create a unkown_counter initialized to 0. 
+unknown_counter = 0 #Create a unkown_counter initialized to 0. 
+
+# Lets create a file bank with barcodes and the filenames assosciated with those barcodes
 
 ##### PARSE FILES #####
-"""
-Open all 4 files, R1, R2, R3, R4 at the same time. We will iteratively take 1 record (4 lines) from R1 and R4, while collecting the respective indices ONLY from R2 and R3 (line 2) 
 
-    ### PER RECORD VALUES ###
-    Read1_Bio = R1 -> Bio Read 1
-    Read1_Barcode = R2 with stripped newline characters -> Index Read 1
-    Read2_Bio = R4 -> Bio Read 2
-    Read2_Barcode = reverse_comp R3 with stripped newline characters -> Index Read 2 (we must reverse compliment the R3 barcode... as this read pairs with the reverse compliment).
-    Header_Addition = "<Read1_Barcode>-<Read2_Barcode>"
-    quality_score = minimum of (mean_quality_score(Read1_Barcode), mean_quality_score(Read2_Barcode))
-    barcode_key = barcode_bank value at key Read1_Barcode
+##### CREATE A BARCODE DICT, WITH BARCODE FILES AS TUPLED VALUES, OPEN ALL FILES #####
+with open(index_file, 'r') as file:
+    header = file.readline().rstrip('\n').split('\t')
+    seq_col = header.index('index sequence') # SEQUENCE COL, ONLY COL OF INTEREST
 
-    Append Header_Addition to the 1st line of Read1_Bio and Read2_Bio. 
+    barcode_bank  = {}
+    for line in file:
+        parts = line.rstrip('\n').split('\t')
+        R1filename = f"{parts[seq_col]}_R1_match.fastq.txt"
+        R2filename = f"{parts[seq_col]}_R2_match.fastq.txt"
 
-        If 1 or both of the barcodes are not in barcode_bank or quality_score < quality_score_cutoff: something went wrong and the barcode/index is unknown, or quality score it too poor to be confident
+        r1file = open(R1filename, 'x') # THESE ARE BEING OVERWRITTEN
+        r2file = open(R2filename, 'x') # THESE ARE BEING OVERWRITTEN
+        barcode_bank[parts[seq_col]] = (r1file, r2file)
+
+### CREATE NON-BARCODE FILES ###
+unknown_R1_fastq = open("unknown_R1_fastq.txt", "x")# OPEN OUR UNKNOWN FILES
+unknown_R2_fastq = open("unknown_R2_fastq.txt", "x")
+hopping_R1_fastq = open("hopping_R1_fastq.txt", "x") # OPEN OUR INDEX HOPPING FILES
+hopping_R2_fastq = open("hopping_R2_fastq.txt", "x")
+
+with (
+    open(r1, "rt") as file1,
+    open(r2, "rt") as file2,
+    open(r3, "rt") as file3,
+    open(r4, "rt") as file4
+):
+    file1.readlines()
+    file2.readlines()
+    file3.readlines()
+    file4.readlines()
+
+    n = 0
+    bioread_lines = list(range(n, n+4))
+
+    Read1_Bio = [line.strip() for idx, line in enumerate(file1) if idx in bioread_lines]
+    Read2_Bio = [line.strip() for idx, line in enumerate(file4) if idx in bioread_lines]
+    Read1_Barcode = [line.strip() for idx, line in enumerate(file2) if idx == (n+1)][0] # Second Line
+    Read2_Barcode = reverse_comp([line.strip() for idx, line in enumerate(file3) if idx == (n+1)][0]) # Second Line, NOT REVERSE COMP YET
+    quality_score = max(mean_qual_score(Read1_Barcode), mean_qual_score(Read2_Barcode))
+    # ???? barcode_key = barcode_bank value at key Read1_Barcode ???? 
+
+
+    Read1_Bio[0] = Read1_Bio[0] + (f" {Read1_Barcode}-{Read2_Barcode}") # ADD Barcodes to the end of the headers
+    Read2_Bio[0] = Read2_Bio[0] + (f" {Read1_Barcode}-{Read2_Barcode}")
+    # CREATE unknown_R2_fastq.txt
+    # CREATE unknown_R1_fastq.txt
+
+    if Read1_Barcode or Read2_Barcode not in barcode_bank or quality_score < quality_score_cutoff:
+        unknown_counter += 1
+        for line in Read1_Bio:
+            unknown_R1_fastq.write(line)
+        for line in Read2_Bio:
+            unknown_R2_fastq.write(line)
     
-            We will add one to the unknown_counter.
+    elif Read1_Barcode == Read2_Barcode:
+        barcode_bank[Read1_Barcode][0].write(line for lines in (Read1_Bio))
+        barcode_bank[Read1_Barcode][1]
 
-            If unknown_R1_fastq.txt anf unknown_R2_fastq.txt exist:
-                Write Read1_Bio record into the fastq file unknown_R1_fastq.txt
-                Write Read2_Bio record into the fastq file unknown_R2_fastq.txt
-            else:
-                Write our Read1_Bio record into a new fastq file titled unknown_R1_fastq.txt
-                Write our Read2_Bio record into a new fastq file titled unknown_R2_fastq.txt
+ """
 
 
         Else, If the R2 barcode matches the R3 barcodes: we know that the reads match valid barcodes:

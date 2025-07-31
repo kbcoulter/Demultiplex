@@ -53,25 +53,39 @@
   $ scp ./bioinfo.py hpc:/projects/bgmp/kcoulter/bioinfo/Bi622/Demultiplex
 
 ~ JOB IDS FOR REAL DATA JOBS (SBATCH):
-    sbatch qual_by_nuc_slurm.sh R1: Submitted batch job 36694919
-    sbatch qual_by_nuc_slurm.sh R2: Submitted batch job 36694920
-    sbatch qual_by_nuc_slurm.sh R3: Submitted batch job 36694922
-    sbatch qual_by_nuc_slurm.sh R4: Submitted batch job 36694923
-
-    JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
-    36694923      bgmp qual_by_ kcoulter  R       1:24      1 n0349
-    36694919      bgmp qual_by_ kcoulter  R       4:16      1 n0349
-
     SOMETHING IS WRONG/UNEXPECTED W/ FILES... OH NONE OF THEM ARE GZIPPED... Changed to regular file opening and the script ran as expected. 
-
 
     Things look good right now...
 
     REAL JOB IDS: 
     R1: Submitted batch job 36716246
+        Command being timed: "./qual_by_nuc.py -f R1FQ -k 101 -o R1_FASTQ"
+        User time (seconds): 10208.71
+        System time (seconds): 70.96
+        Percent of CPU this job got: 99%
+        Elapsed (wall clock) time (h:mm:ss or m:ss): 2:51:44
+        Exit status: 0
     R2: Submitted batch job 36716245
+        Command being timed: "./qual_by_nuc.py -f R2FQ -k 8 -o R2_FASTQ"
+        User time (seconds): 1052.25
+        System time (seconds): 12.79
+        Percent of CPU this job got: 99%
+        Elapsed (wall clock) time (h:mm:ss or m:ss): 17:47.24
+        Exit status: 0
     R3: Submitted batch job 36716244
+        Command being timed: "./qual_by_nuc.py -f R3FQ -k 8 -o R3_FASTQ"
+        User time (seconds): 1060.77
+        System time (seconds): 13.40
+        Percent of CPU this job got: 99%
+        Elapsed (wall clock) time (h:mm:ss or m:ss): 18:01.33
+        Exit status: 0
     R4: Submitted batch job 36716243
+        Command being timed: "./qual_by_nuc.py -f R4FQ -k 101 -o R4_FASTQ"
+        User time (seconds): 10255.75
+        System time (seconds): 45.82
+        Percent of CPU this job got: 99%
+        Elapsed (wall clock) time (h:mm:ss or m:ss): 2:52:06
+        Exit status: 0
 
 ### 1.1.3: Setting a logical cutoff###
     Lets start with 5... justification is in answers and prelim data exploration. 
@@ -202,7 +216,21 @@ our key, we have additional output files for these records and counters to track
 
 # NEED TO DOUBLE CHECK R3 OUTPUT MAKES SENSE... -> LABEL R4 WITH R2 BARCODE
 
+########################
+### 3 Demultiplex.py ###
+########################
 
+#############################
+# $ mamba create -n demultiplex
+# $ mamba activate demultiplex
+# $ mamba install python # Python version 3.13.5
+# $ mamba install numpy
+
+
+Reverse comp of string: 
+
+ complement_map = {'A': 'T', 'T': 'A', 'C': 'G', 'G': 'C',
+                      'a': 't', 't': 'a', 'c': 'g', 'g': 'c'}
 
 
     
