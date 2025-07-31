@@ -28,7 +28,8 @@
 
 4. How many indexes have undetermined (N) base calls? (Utilize your command line tool knowledge. Submit the command(s) you used. CHALLENGE: use a one-line command)
 
-        NEED TO ZCAT FILE GREP FOR READ LINES IN R2 and R3, THEN GREP FOR N, COUNT LINES WITH N. RUN WHEN OPEN THIS ON TALAPAS
+        FASTQ R2: 3976613 via $ zcat 1294_S1_L008_R2_001.fastq.gz | awk '/^@/ {getline; print}' | grep N | wc -l
+        FASTQ R3: 3328051 via $ zcat 1294_S1_L008_R3_001.fastq.gz | awk '/^@/ {getline; print}' | grep N | wc -l
 
 ## Part 2
 1. Define the problem
