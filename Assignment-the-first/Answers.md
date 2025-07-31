@@ -1,7 +1,9 @@
 # Assignment the First
 
 ## Part 1
-1. Be sure to upload your Python script. Provide a link to it here:
+1. Be sure to upload your Python script. Provide a link to it [here](./qual_by_nuc.py).
+
+    Also, here is [Slurm Script](./qual_by_nuc_slurm.sh) to Run the python (qual_by_nuc.py). 
 
 | File name | label | Read length | Phred encoding |
 |---|---|---|---|
@@ -11,10 +13,23 @@
 | 1294_S1_L008_R4_001.fastq.gz | Bio Read 2 | 101 | 33 |
 
 2. Per-base NT distribution
-    1. Use markdown to insert your 4 histograms here.
-    2. **YOUR ANSWER HERE**
-    3. **YOUR ANSWER HERE**
-    
+    1. [Histogram 1](./R1_FASTQ.png)
+    2. [Histogram 2](./R2_FASTQ.png)
+    3. [Histogram 3](./R3_FASTQ.png)
+    4. [Histogram 4](./R4_FASTQ.png)
+
+3. What is a good quality score cutoff for index reads and biological read pairs to utilize for sample identification and downstream analysis, respectively? Justify your answer.
+
+    It is essential that we maintain a sufficient number of data while ensuring the quality of our indexed reads. Initially, it may seem logical to set a relatively high threshold for the mean quality score in our index. However, this is unecessary.
+
+    Index hopping or non-matching barcodes will not appear in the output barcode FASTQ files, so there’s no need to set a quality score threshold to filter them out. Instead, the quality score will be used to filter reads that do match barcodes in our dataset. If a read matches a barcode in our database, it’s reasonable to assume it’s correct, as the likelihood of both barcodes index hopping to both match, and exist in our index bank, is incredibly low. Therefore, the quality score cutoff should only be used to exclude reads with EXTREMELY poor average quality, as the definitive errors are being sorted out already. 
+
+    I propose a quality score cutoff of 5, meaning that if the mean quality score of a index is below 5, the read isn't passed into its respective FASTQ file and goes into an unknown file instead. This threshold should only cut reads of the worst quality. 
+
+4. How many indexes have undetermined (N) base calls? (Utilize your command line tool knowledge. Submit the command(s) you used. CHALLENGE: use a one-line command)
+
+        NEED TO ZCAT FILE GREP FOR READ LINES IN R2 and R3, THEN GREP FOR N, COUNT LINES WITH N. RUN WHEN OPEN THIS ON TALAPAS
+
 ## Part 2
 1. Define the problem
 
