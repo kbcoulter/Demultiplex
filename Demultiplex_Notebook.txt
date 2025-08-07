@@ -225,12 +225,36 @@ our key, we have additional output files for these records and counters to track
 # $ mamba activate demultiplex
 # $ mamba install python # Python version 3.13.5
 # $ mamba install numpy
-
+#############################
 
 Reverse comp of string: 
 
  complement_map = {'A': 'T', 'T': 'A', 'C': 'G', 'G': 'C',
                       'a': 't', 't': 'a', 'c': 'g', 'g': 'c'}
+
+~ Stopped, output report writing is not as efficient as it should/could be. Lets revise this later...
+
+~ Output writing revised... lost track of newline chars
+    Unknown writing was not functioning as expected...
+    Lost list index and was calling w/ newline, so was doubling up
+
+!! POTENTIAL ISSUE: !!
+    Read1_Barcode = Read1_Barcode.strip()
+    Read2_Barcode = reverse_comp(Read2_Barcode) # Ignore warnings, this works ? 
+
+    Not sure what the warnings here are... is it because my function has two possible returned data types?
+    SOLUTION: This is ok. The return option that will generate the warning will break before we reach that point in the script. 
+        This is fine to keep, but the warning should not be suppressed.
+
+    Note: I still need to add unit tests to the code...
+
+### REAL DATA ###
+#r1 = "/projects/bgmp/shared/2017_sequencing/1294_S1_L008_R1_001.fastq.gz"
+#r2 = "/projects/bgmp/shared/2017_sequencing/1294_S1_L008_R2_001.fastq.gz"
+#r3 = "/projects/bgmp/shared/2017_sequencing/1294_S1_L008_R3_001.fastq.gz"
+#r4 = "/projects/bgmp/shared/2017_sequencing/1294_S1_L008_R4_001.fastq.gz"
+
+
 
 
     
