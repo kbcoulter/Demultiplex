@@ -263,5 +263,13 @@ Reverse comp of string:
         $ chmod 755 demultiplex.py
     Submitted batch job 36954873
 
+    Everything looks good. Except overwriting the outlog with print statements instead of using the usr bin time. 
+    CORRECTION: the dictionary was not sorted... make this prettier and sort the dictionary before returning.
+
+    Submitted batch job 36981625 -> THIS SHOULD BE THE FINAL, CORRECT RUN. Changed shells cript to new output dir to avoid overwriting also. 
+    This change is in Demultiplexed_No_Print
+    
+
+
     
 
