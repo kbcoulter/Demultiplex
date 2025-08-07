@@ -10,7 +10,6 @@ sys.path.append(os.path.abspath("..")) # ONLY TO GET BIOINFO AND MAINTAIN VERSIO
 import bioinfo
 
 ##### FUNCTIONS #####
-
 def get_args():
      parser = argparse.ArgumentParser(description="A script to average the quality scores at each position for all reads and generate a per nucleotide mean distribution of quality scores for read1, read2, index1, and index2.")
      parser.add_argument("-r1", "--read1", help="An input FASTQ Read 1 file", required=True, type=str)
@@ -99,7 +98,7 @@ def main():
 
     with gzip.open(r1, 'rt') as file1, gzip.open(r2, 'rt') as file2, gzip.open(r3, 'rt') as file3, gzip.open(r4, 'rt') as file4: #Zipped
     ### ADD BACK WIT UNZIPPED SUPPORT ### with open(r1, 'rt') as file1, open(r2, 'rt') as file2, open(r3, 'rt') as file3, open(r4, 'rt') as file4: #Unzipped
-        print("\nDemultiplexing...\n")
+        # print("\nDemultiplexing...\n") # Commented out temporarily to avoid writing over output
         while True:
             Read1_Barcode = (collect_record(file2, True))
             if not Read1_Barcode:
@@ -136,7 +135,7 @@ def main():
     ##### OUTPUT REPORT #####
     total = match_counter + hopping_counter + unknown_counter
     report = open(f"{outname}/_Demultiplex_Report.txt", "w")
-    report.write((46 + len(outname)) * "#" + "\n" + "### DEMULTIPLEX REPORT SUMMARY (FASTQ In {outname}) ###\n" + (46 + len(outname)) * "#" + "\n\n")
+    report.write((46 + len(outname)) * "#" + "\n" + f"### DEMULTIPLEX REPORT SUMMARY (FASTQ In {outname}) ###\n" + (46 + len(outname)) * "#" + "\n\n")
     report.write("########## GENERAL SUMMARY ##########\n")
     report.write(f"Matching Indexes:\t{match_counter} Matching Records:\t{round((match_counter * 100 / total),3)}% of Total\n")
     report.write(f"Hopping Indexes:\t{hopping_counter} Hopping Records:\t{round((hopping_counter * 100 / total),3)}% of Total\n")
@@ -147,12 +146,14 @@ def main():
         report.write(entry + "\n")
 
     report.write("\n########## READ PAIR RESULTS ##########\n##### MATCH RESULTS #####\nIndex_Pair\tNum_Pairs\tPerc_of_Matched\tPerc_of_Total\n")
-    for entry in match_dict:
-        report.write(f"{entry}:\t{match_dict[entry]}\t{round((match_dict[entry] * 100 / match_counter),3)}\t{round((match_dict[entry] * 100 / total),3)}\n")
+    match_dict_sorted = sorted(match_dict.items(), key=lambda item: item[1])
+    for pair,count in match_dict_sorted:
+        report.write(f"{pair}:\t{count}\t{round((count * 100 / match_counter),3)}\t{round((count * 100 / total),3)}\n")
 
     report.write("\n##### HOPPING RESULTS #####\nIndex_Pair\tNum_Pairs\tPerc_of_hoppinged\tPerc_of_Total\n")
-    for entry in hopping_dict:
-        report.write(f"{entry}:\t{hopping_dict[entry]}\t{round((hopping_dict[entry] * 100 / hopping_counter),3)}\t{round((hopping_dict[entry] * 100 / total),3)}\n")
+    hopping_dict_sorted = sorted(hopping_dict.items(), key=lambda item: item[1])
+    for pair,count in hopping_dict_sorted:
+        report.write(f"{pair}:\t{count}\t{round((count * 100 / hopping_counter),3)}\t{round((count * 100 / total),3)}\n")
 
     ##### CLOSE ALL FILES #####
     unknown_R1_fastq.close()
@@ -164,7 +165,7 @@ def main():
         r1file.close()
         r2file.close()
 
-    print(f"Demultiplexing Complete. Output contained in {outname}")
+    # print(f"Demultiplexing Complete. Output contained in {outname}") # Commented out temporarily to avoid writing over output
 
 if __name__ == "__main__":
     main()

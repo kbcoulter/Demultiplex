@@ -257,7 +257,11 @@ Reverse comp of string:
 ~ Added Unit tests in file test_demultiplex_functions.py
 ~ Also cut some repititive code using the bioinfo.py (version 0.5)
 
-
+~ Submitting Job...
+    Lol forgot to change permissions XD 
+        $ chmod 755 demultiplex.sh 
+        $ chmod 755 demultiplex.py
+    Submitted batch job 36954873
 
     
 
