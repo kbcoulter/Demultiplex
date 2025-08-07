@@ -12,16 +12,20 @@ written during the Bioinformatics and Genomics Program coursework.
 Functions with tests to ensure they are functioning properly are included below.
 This file lives in its own bioinfo repo/module but may be copied elsewhere.'''
 
-__version__ = "0.4"         # Read way more about versioning here:
+__version__ = "0.5"         # Read way more about versioning here:
                             # https://en.wikipedia.org/wiki/Software_versioning
-                            # 2025 July 17
+                            # 2025 Aug 6
 
 DNA_bases = "ATGCatgc"
 RNA_bases = "AUGCaugc"
 
 def convert_phred(letter: str) -> int:
-    '''Converts a single character into a phred score'''
-    return (ord(letter) - 33)
+    '''Takes a single ASCII character (string) encoded in Phred+33 and returns the quality score value as an integer.'''
+    if letter == None:
+        print("ERROR\tPlease pass valid characters to obtain phred for quality score")
+        return None
+    else:
+        return (ord(letter) - 33)
 
 def qual_score(phred_score: str) -> float:
     '''Accepts a phred_score string as input, returns the average quality score of the entire phred string'''
@@ -34,7 +38,7 @@ def qual_score(phred_score: str) -> float:
 def validate_base_seq(seq: str, RNAflag: bool=False) -> bool:
     '''This function takes a string and an optional bool to denote RNA or DNA (DNA Standard with False). Returns True if string is composed
     of only A's, T's (or U's if RNAflag), G's, C's. False otherwise. Case insensitive.'''
-    seq = seq.upper()
+    seq = seq.upper().strip()
     return len(seq) == seq.count("A") + seq.count("U" if RNAflag else "T") + seq.count("G") + seq.count("C")
 
 def gc_content(DNA:str) -> float:

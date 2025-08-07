@@ -5,9 +5,12 @@ import numpy as np
 import argparse
 import gzip
 import os
-import bioinfo # UPDATE THE STRIP IN validate_base_seq.. and UPDATE THE ERROR IN CONVERT_PHRED
+import sys
+sys.path.append(os.path.abspath("..")) # ONLY TO GET BIOINFO AND MAINTAIN VERSION W/ BIOINFO USED IN ASSIGN. 1ST
+import bioinfo
 
 ##### FUNCTIONS #####
+
 def get_args():
      parser = argparse.ArgumentParser(description="A script to average the quality scores at each position for all reads and generate a per nucleotide mean distribution of quality scores for read1, read2, index1, and index2.")
      parser.add_argument("-r1", "--read1", help="An input FASTQ Read 1 file", required=True, type=str)
@@ -20,23 +23,13 @@ def get_args():
      ### ADD LATER ### parer.add_argument("-z", "--unzipped", help=" Are FASTQs unzipped (not gzipped)? Defaults to zipped FASTQ (False), otherwise, set to True.", required=False, type= bool, default = True)
      return parser.parse_args()
 
-def reverse_comp(sequence: str) -> str:
+def reverse_comp(sequence: str) -> str | None:
     '''Takes a sequence (string) with or without newline characters and returns the reverse compliment of the string without newline characters in uppercase'''
     sequence = sequence.upper().strip()
-    if not bioinfo.validate_base_seq(sequence):
-        print("ERROR\tSOME BARCODES ARE NOT DNA or RNA (Contain Char other than A, T, C, G, U, N - Unknown)")
-    else:
-        map = {'A': 'T', 'T': 'A', 'C': 'G', 'G': 'C', 'N': 'N'} # MAP Ns to maintain them to break.
-        rev_comp = ("".join([map.get(entry, entry)for entry in sequence]))[::-1] # BRACKET REVERSES, OTHER COMPS
-        return rev_comp
-"""
-def convert_phred(letter: str) -> int:
-    '''Takes a single ASCII character (string) encoded in Phred+33 and returns the quality score value as an integer.'''
-    if letter == None:
-        print("ERROR\tPlease pass valid characters to obtain phred for quality score")
-    else:
-        return (ord(letter) - 33)
-"""
+    map = {'A': 'T', 'T': 'A', 'C': 'G', 'G': 'C', 'N': 'N'} # MAP Ns to maintain them to break.
+    rev_comp = ("".join([map.get(entry, entry)for entry in sequence]))[::-1] # BRACKET REVERSES, OTHER COMPS
+    return rev_comp
+
 def mean_qual_score(sequence: str) -> float:
     '''Takes a quality score sequence (string), uses convert_phred function to convert each phred+33 encoding into a integer quality score, then averages the quality score and returns the mean values. '''
     holder = []
@@ -44,7 +37,7 @@ def mean_qual_score(sequence: str) -> float:
         holder.append(bioinfo.convert_phred(char))
     return (np.mean(holder))
 
-def collect_record(file, indexread, headeradd=""):
+def collect_record(file, indexread, headeradd="") -> str | None | list:
     '''Takes a FASTQ file and returns the entire record if indexread is False, or the index line only if indexread is True. Strips newline chars'''
     if indexread:
         line_junk = file.readline()
@@ -67,16 +60,14 @@ def collect_record(file, indexread, headeradd=""):
     
 def main():
     args = get_args()
-
-    ### TESTING DATA ### 
-    quality_score_cutoff = 5 #Create a quality_score_cutoff integer where every index/barcode read with quality score below goes into unknown. 
-    index_file = "/projects/bgmp/shared/2017_sequencing/indexes.txt"
-    r1 = "../TEST-input_FASTQ/S1_TEST_R1_001.fastq"
-    r2 = "../TEST-input_FASTQ/S1_TEST_R2_001.fastq"
-    r3 = "../TEST-input_FASTQ/S1_TEST_R3_001.fastq"
-    r4 = "../TEST-input_FASTQ/S1_TEST_R4_001.fastq"
-    outname = "testing"
-
+    outname = args.outname
+    index_file = args.index
+    quality_score_cutoff = args.qualcutoff
+    r1 = args.read1
+    r2 = args.read2
+    r3 = args.read3
+    r4 = args.read4
+    
     ##### SET GLOBAL VARS #####
     match_dict = {} # Dictionary with the barcode or indices as keys, and match numbers initilizaed to 1 upon thier addition.
     match_counter = 0 # Create a _counter initialized to 0.
@@ -106,8 +97,8 @@ def main():
     hopping_R1_fastq = open(f"{outname}/hopping_R1_fastq.txt", "x") # OPEN OUR INDEX HOPPING FILES
     hopping_R2_fastq = open(f"{outname}/hopping_R2_fastq.txt", "x")
 
-    #with gzip.open(r1, 'rt') as file1, gzip.open(r2, 'rt') as file2, gzip.open(r3, 'rt') as file3, gzip.open(r4, 'rt') as file4: #Zipped
-    with open(r1, 'rt') as file1, open(r2, 'rt') as file2, open(r3, 'rt') as file3, open(r4, 'rt') as file4: #Unzipped
+    with gzip.open(r1, 'rt') as file1, gzip.open(r2, 'rt') as file2, gzip.open(r3, 'rt') as file3, gzip.open(r4, 'rt') as file4: #Zipped
+    ### ADD BACK WIT UNZIPPED SUPPORT ### with open(r1, 'rt') as file1, open(r2, 'rt') as file2, open(r3, 'rt') as file3, open(r4, 'rt') as file4: #Unzipped
         print("\nDemultiplexing...\n")
         while True:
             Read1_Barcode = (collect_record(file2, True))

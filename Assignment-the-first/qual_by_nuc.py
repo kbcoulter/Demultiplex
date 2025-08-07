@@ -11,6 +11,9 @@ import argparse
 import numpy as np
 import matplotlib.pyplot as plt
 import gzip
+import sys
+import os
+sys.path.append(os.path.abspath("..")) # ONLY TO GET BIOINFO AND MAINTAIN VERSION W/ BIOINFO USED IN ASSIGN. 1ST
 import bioinfo # IMPORTS convert_phred (Set to 33 encoding)
 
 ##### COLLECT ARGS #####

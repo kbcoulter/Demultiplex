@@ -254,6 +254,8 @@ Reverse comp of string:
 #r3 = "/projects/bgmp/shared/2017_sequencing/1294_S1_L008_R3_001.fastq.gz"
 #r4 = "/projects/bgmp/shared/2017_sequencing/1294_S1_L008_R4_001.fastq.gz"
 
+~ Added Unit tests in file test_demultiplex_functions.py
+~ Also cut some repititive code using the bioinfo.py (version 0.5)
 
 
 
