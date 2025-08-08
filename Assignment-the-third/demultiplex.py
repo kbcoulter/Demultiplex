@@ -146,12 +146,12 @@ def main():
         report.write(entry + "\n")
 
     report.write("\n########## READ PAIR RESULTS ##########\n##### MATCH RESULTS #####\nIndex_Pair\tNum_Pairs\tPerc_of_Matched\tPerc_of_Total\n")
-    match_dict_sorted = sorted(match_dict.items(), key=lambda item: item[1])
+    match_dict_sorted = sorted(match_dict.items(), key=lambda item: item[1], reverse=True)
     for pair,count in match_dict_sorted:
         report.write(f"{pair}:\t{count}\t{round((count * 100 / match_counter),3)}\t{round((count * 100 / total),3)}\n")
 
     report.write("\n##### HOPPING RESULTS #####\nIndex_Pair\tNum_Pairs\tPerc_of_hoppinged\tPerc_of_Total\n")
-    hopping_dict_sorted = sorted(hopping_dict.items(), key=lambda item: item[1])
+    hopping_dict_sorted = sorted(hopping_dict.items(), key=lambda item: item[1], reverse=True)
     for pair,count in hopping_dict_sorted:
         report.write(f"{pair}:\t{count}\t{round((count * 100 / hopping_counter),3)}\t{round((count * 100 / total),3)}\n")
 

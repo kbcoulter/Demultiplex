@@ -2,6 +2,8 @@
 ### DEMULTIPLEX ###
 ###################
 
+NOTE: DEMULTIPLEXING OUTPUT REPORT IS IN: /Assignment-the-third/Demultiplexed/_Demultiplex_Report.txt
+
 #####################################
 ### 1.1.1 Prelim Data Exploration ###
 #####################################
@@ -269,7 +271,32 @@ Reverse comp of string:
     Submitted batch job 36981625 -> THIS SHOULD BE THE FINAL, CORRECT RUN. Changed shells cript to new output dir to avoid overwriting also. 
     This change is in Demultiplexed_No_Print
     
+    Nevermind, this isn't the final run. Submitting one more, tracking everything as expected. Had usr in bin/bash, breaking out.log
+    Also changed my print order to be descending and down to 2 nodes, as we aren't mthreading... not 1 because it feels wrong:
+    Submitted batch job 37052410
 
+    Command being timed: "./demultiplex.py -r1 /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R1_001.fastq.gz -r2 /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R2_001.fastq.gz -r3 /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R3_001.fastq.gz -r4 /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R4_001.fastq.gz -i /projects/bgmp/shared/2017_sequencing/indexes.txt -q 5 -o Demultiplexed"
+	User time (seconds): 7793.12
+	System time (seconds): 92.97
+	Percent of CPU this job got: 43%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 5:05:13
+	Page size (bytes): 4096
+	Exit status: 0
+
+    Note: Why did this take 2.5 hours longer than the previous run, when the only change was sorting the dictionary in reverse order?
+        Talapas has been acting very strange the past couple days for me, maybe that has something to do with it...
+            Code is NOT perfectly optimized... prioritizing readable, simple logic, with small changes to help performance, but still too long. 
+
+~ FORGOT TO INCLUDE EARLIER: test_demultiplex_functions created. 
+    Everything in here is passing, working as expected.
+    Worth noting that without creating an in-depth unit test file to check that my testing output matches my test files (when qual cutoff ==9),
+        which it does, this is not a guarantee that everything is perfect. From the edge cases in my test files everything looks good. 
+
+~ General note for revisiting this project or repon after grading: Lets condense demultiplex, no bioinfo imports, etc. 
+    This can be MUCH MUCH MUCH prettier and MUCH more efficient. Add loading bar, print updates, etc. 
+
+~ Done for Assign, not forever. 
+COMPLETE
 
     
 
