@@ -2,7 +2,7 @@
 ### DEMULTIPLEX ###
 ###################
 
-NOTE: DEMULTIPLEXING OUTPUT REPORT IS IN: /Assignment-the-third/Demultiplexed/_Demultiplex_Report.txt
+NOTE: DEMULTIPLEXING OUTPUT REPORT IS IN: /Assignment-the-third/_Demultiplex_Report.txt
 
 #####################################
 ### 1.1.1 Prelim Data Exploration ###

@@ -115,3 +115,12 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# My Demultiplexed Output Data:
+
+*Demultiplexed
+
+# My EDA .png PLOTS
+
+*_FASTQ.png
+
